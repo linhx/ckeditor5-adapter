@@ -6,7 +6,7 @@
 /* globals window, document */
 
 /**
- * @module adapter-ckfinder/utils
+ * @module adapter-filemanager/utils
  */
 
 const TOKEN_COOKIE_NAME = 'ckCsrfToken';

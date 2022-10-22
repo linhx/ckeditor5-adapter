@@ -6,26 +6,18 @@
 /* globals XMLHttpRequest, FormData */
 
 /**
- * @module adapter-ckfinder/uploadadapter
+ * @module adapter-filemanager/uploadadapter
  */
 
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import FileRepository from '@ckeditor/ckeditor5-upload/src/filerepository';
-import { getCsrfToken } from './utils';
 
 /**
- * A plugin that enables file uploads in CKEditor 5 using the CKFinder server–side connector.
- *
- * See the {@glink features/image-upload/ckfinder "CKFinder file manager integration" guide} to learn how to configure
- * and use this feature as well as find out more about the full integration with the file manager
- * provided by the {@link module:ckfinder/ckfinder~CKFinder} plugin.
- *
- * Check out the {@glink features/image-upload/image-upload comprehensive "Image upload overview"} to learn about
- * other ways to upload images into CKEditor 5.
+ * TODO
  *
  * @extends module:core/plugin~Plugin
  */
-export default class CKFinderUploadAdapter extends Plugin {
+export default class FileManagerUploadAdapter extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
@@ -37,26 +29,31 @@ export default class CKFinderUploadAdapter extends Plugin {
 	 * @inheritDoc
 	 */
 	static get pluginName() {
-		return 'CKFinderUploadAdapter';
+		return 'FileManagerUploadAdapter';
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	init() {
-		const url = this.editor.config.get( 'ckfinder.uploadUrl' );
+		const url = this.editor.config.get( 'filemanager.uploadUrl' );
+		const fileFormName = this.editor.config.get( 'filemanager.fileFormName' ) || 'file';
 
 		if ( !url ) {
 			return;
 		}
 
-		// Register CKFinderAdapter
-		this.editor.plugins.get( FileRepository ).createUploadAdapter = loader => new UploadAdapter( loader, url, this.editor.t );
+		this.editor.plugins.get( FileRepository ).createUploadAdapter = loader => new UploadAdapter( {
+			loader,
+			url,
+			t: this.editor.t,
+			fileFormName
+		} );
 	}
 }
 
 /**
- * Upload adapter for CKFinder.
+ * Upload adapter for the file manager.
  *
  * @private
  * @implements module:upload/filerepository~UploadAdapter
@@ -68,8 +65,11 @@ class UploadAdapter {
 	 * @param {module:upload/filerepository~FileLoader} loader
 	 * @param {String} url
 	 * @param {module:utils/locale~Locale#t} t
+	 * @param {String} fileFormName
 	 */
-	constructor( loader, url, t ) {
+	constructor( {
+		loader, url, t, fileFormName
+	} ) {
 		/**
 		 * FileLoader instance to use during the upload.
 		 *
@@ -90,6 +90,13 @@ class UploadAdapter {
 		 * @member {module:utils/locale~Locale#t} #t
 		 */
 		this.t = t;
+
+		/**
+		 * FormData field name for file
+		 *
+		 * @member {String} #fileFormName
+		 */
+		this.fileFormName = fileFormName;
 	}
 
 	/**
@@ -150,7 +157,7 @@ class UploadAdapter {
 		xhr.addEventListener( 'load', () => {
 			const response = xhr.response;
 
-			if ( !response || !response.uploaded ) {
+			if ( !response ) {
 				return reject( response && response.error && response.error.message ? response.error.message : genericError );
 			}
 
@@ -180,8 +187,7 @@ class UploadAdapter {
 	_sendRequest( file ) {
 		// Prepare form data.
 		const data = new FormData();
-		data.append( 'upload', file );
-		data.append( 'ckCsrfToken', getCsrfToken() );
+		data.append( this.fileFormName, file );
 
 		// Send request.
 		this.xhr.send( data );
