@@ -38,6 +38,7 @@ export default class FileManagerUploadAdapter extends Plugin {
 	init() {
 		const url = this.editor.config.get( 'filemanager.uploadUrl' );
 		const fileFormName = this.editor.config.get( 'filemanager.fileFormName' ) || 'file';
+		const createImageData = this.editor.config.get( 'filemanager.createImageData' );
 
 		if ( !url ) {
 			return;
@@ -47,10 +48,18 @@ export default class FileManagerUploadAdapter extends Plugin {
 			loader,
 			url,
 			t: this.editor.t,
-			fileFormName
+			fileFormName,
+			createImageData
 		} );
 	}
 }
+
+const defaultCreateImageData = response => ( {
+	...response,
+	urls: {
+		default: response.url
+	}
+} );
 
 /**
  * Upload adapter for the file manager.
@@ -68,7 +77,7 @@ class UploadAdapter {
 	 * @param {String} fileFormName
 	 */
 	constructor( {
-		loader, url, t, fileFormName
+		loader, url, t, fileFormName, createImageData
 	} ) {
 		/**
 		 * FileLoader instance to use during the upload.
@@ -97,6 +106,8 @@ class UploadAdapter {
 		 * @member {String} #fileFormName
 		 */
 		this.fileFormName = fileFormName;
+
+		this.createImageData = createImageData || defaultCreateImageData;
 	}
 
 	/**
@@ -161,9 +172,7 @@ class UploadAdapter {
 				return reject( response && response.error && response.error.message ? response.error.message : genericError );
 			}
 
-			resolve( {
-				default: response.url
-			} );
+			resolve( this.createImageData( response ) );
 		} );
 
 		// Upload progress when it's supported.
