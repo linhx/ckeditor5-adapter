@@ -1,22 +1,18 @@
-CKFinder adapter for CKEditor 5
+Upload adapter for CKEditor 5
 ========================================
 
-<h3 align=center>⚠⚠ This repository was moved ⚠⚠</h3>
+By default, Ckeditor5-adapter-ckfinder uploads file with the FormData name is "upload". This package allow to have a custom FormData name.
 
-<p align=center>The package was moved to the <a href="https://github.com/ckeditor/ckeditor5/tree/master/packages">main repository</a>.</p>
+Config:
 
-[![npm version](https://badge.fury.io/js/%40ckeditor%2Fckeditor5-adapter-ckfinder.svg)](https://www.npmjs.com/package/@ckeditor/ckeditor5-adapter-ckfinder)
-[![Dependency Status](https://david-dm.org/ckeditor/ckeditor5-adapter-ckfinder/status.svg)](https://david-dm.org/ckeditor/ckeditor5-adapter-ckfinder)
-[![devDependency Status](https://david-dm.org/ckeditor/ckeditor5-adapter-ckfinder/dev-status.svg)](https://david-dm.org/ckeditor/ckeditor5-adapter-ckfinder?type=dev)
+```javascript
+filemanager: {
+	uploadUrl: string, // upload url
+	fileFormName: string, // custom FormData name of uploading file
+	createImageData: (responseData) => { urls: { default: string, /* others size */ } } // if the response data from uploadUrl is not match with the image format https://ckeditor.com/docs/ckeditor5/latest/features/images/image-upload/simple-upload-adapter.html#successful-upload, then you can define a adapter method to create the image data.
+}
+```
 
-This package implements a CKEditor 5 upload adapter compatible with the [CKFinder file manager and uploader](https://ckeditor.com/ckfinder/)'s server–side connector.
+## TODO
 
-## Documentation
-
-See the ["CKFinder integration" guide](https://ckeditor.com/docs/ckeditor5/latest/features/ckfinder.html) and the [plugin documentation](https://ckeditor.com/docs/ckeditor5/latest/api/adapter-ckfinder.html) to learn how to configure the adapter.
-
-Check out the {@link features/image-upload/image-upload comprehensive "Image upload overview"} to learn about other ways to upload images into CKEditor 5.
-
-## License
-
-Licensed under the terms of [GNU General Public License Version 2 or later](http://www.gnu.org/licenses/gpl.html). For full details about the license, please check the `LICENSE.md` file or [https://ckeditor.com/legal/ckeditor-oss-license](https://ckeditor.com/legal/ckeditor-oss-license).
+- [ ] allow select uploaded file
