@@ -36,17 +36,19 @@ export default class FileManagerUploadAdapter extends Plugin {
 	 * @inheritDoc
 	 */
 	init() {
-		const url = this.editor.config.get( 'filemanager.uploadUrl' );
-		const fileFormName = this.editor.config.get( 'filemanager.fileFormName' ) || 'file';
-		const createImageData = this.editor.config.get( 'filemanager.createImageData' );
+		const {
+			uploadUrl,
+			fileFormName,
+			createImageData
+		} = this.editor.config.get( 'filemanager' );
 
-		if ( !url ) {
+		if ( !uploadUrl ) {
 			return;
 		}
 
 		this.editor.plugins.get( FileRepository ).createUploadAdapter = loader => new UploadAdapter( {
 			loader,
-			url,
+			url: uploadUrl,
 			t: this.editor.t,
 			fileFormName,
 			createImageData
@@ -105,7 +107,7 @@ class UploadAdapter {
 		 *
 		 * @member {String} #fileFormName
 		 */
-		this.fileFormName = fileFormName;
+		this.fileFormName = fileFormName || 'file';
 
 		this.createImageData = createImageData || defaultCreateImageData;
 	}
