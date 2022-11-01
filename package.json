@@ -1,6 +1,6 @@
 {
   "name": "@linhx/ckeditor5-adapter-filemanager",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "File manager adapter for CKEditor 5.",
   "keywords": [
     "ckeditor",

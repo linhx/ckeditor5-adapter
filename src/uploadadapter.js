@@ -146,6 +146,7 @@ class UploadAdapter {
 	 */
 	_initRequest() {
 		const xhr = this.xhr = new XMLHttpRequest();
+		xhr.withCredentials = true;
 
 		xhr.open( 'POST', this.url, true );
 		xhr.responseType = 'json';
