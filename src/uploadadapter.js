@@ -39,10 +39,11 @@ export default class FileManagerUploadAdapter extends Plugin {
 		const {
 			uploadUrl,
 			fileFormName,
-			createImageData
+			createImageData,
+			upload
 		} = this.editor.config.get( 'filemanager' );
 
-		if ( !uploadUrl ) {
+		if ( !uploadUrl && !upload ) {
 			return;
 		}
 
@@ -51,7 +52,8 @@ export default class FileManagerUploadAdapter extends Plugin {
 			url: uploadUrl,
 			t: this.editor.t,
 			fileFormName,
-			createImageData
+			createImageData,
+			upload
 		} );
 	}
 }
@@ -79,7 +81,7 @@ class UploadAdapter {
 	 * @param {String} fileFormName
 	 */
 	constructor( {
-		loader, url, t, fileFormName, createImageData
+		loader, url, t, fileFormName, createImageData, upload
 	} ) {
 		/**
 		 * FileLoader instance to use during the upload.
@@ -110,6 +112,22 @@ class UploadAdapter {
 		this.fileFormName = fileFormName || 'file';
 
 		this.createImageData = createImageData || defaultCreateImageData;
+
+		this._upload = upload || this._defaultUpload;
+	}
+
+	_defaultUpload( { file, setProgress } ) {
+		return new Promise( ( resolve, reject ) => {
+			this._initRequest();
+			this._initListeners( resolve, reject, file, setProgress );
+			this._sendRequest( file );
+		} );
+	}
+
+	_setProgress( { total, loaded } ) {
+		const loader = this.loader;
+		loader.uploadTotal = total;
+		loader.uploaded = loaded;
 	}
 
 	/**
@@ -120,10 +138,9 @@ class UploadAdapter {
 	 */
 	upload() {
 		return this.loader.file.then( file => {
-			return new Promise( ( resolve, reject ) => {
-				this._initRequest();
-				this._initListeners( resolve, reject, file );
-				this._sendRequest( file );
+			return this._upload( {
+				file,
+				setProgress: this._setProgress.bind( this )
 			} );
 		} );
 	}
@@ -160,9 +177,8 @@ class UploadAdapter {
 	 * @param {Function} reject Callback function to be called when the request cannot be completed.
 	 * @param {File} file File instance to be uploaded.
 	 */
-	_initListeners( resolve, reject, file ) {
+	_initListeners( resolve, reject, file, setProgress ) {
 		const xhr = this.xhr;
-		const loader = this.loader;
 		const t = this.t;
 		const genericError = t( 'Cannot upload file:' ) + ` ${ file.name }.`;
 
@@ -183,8 +199,10 @@ class UploadAdapter {
 		if ( xhr.upload ) {
 			xhr.upload.addEventListener( 'progress', evt => {
 				if ( evt.lengthComputable ) {
-					loader.uploadTotal = evt.total;
-					loader.uploaded = evt.loaded;
+					setProgress( {
+						total: evt.total,
+						loaded: evt.loaded
+					} );
 				}
 			} );
 		}
